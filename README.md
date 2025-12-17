@@ -28,7 +28,7 @@ npm install @just-every/task
 
 ## Prerequisites
 
-- Node.js 18.x or higher
+- Node.js 20.x or higher
 - At least one LLM provider API key
 - @just-every/ensemble (installed as peer dependency)
 

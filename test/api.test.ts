@@ -3,77 +3,88 @@ import { runTask } from '../src/core/engine.js';
 import { Agent } from '@just-every/ensemble';
 
 // Mock ensemble
-vi.mock('@just-every/ensemble', () => ({
-    Agent: vi.fn().mockImplementation((def) => ({
-        ...def,
-        agent_id: def.agent_id || 'test-agent',
-        name: def.name || 'TestAgent',
-        tools: def.tools || []
-    })),
-    cloneAgent: vi.fn().mockImplementation((agent) => ({
-        ...agent,
-        agent_id: agent.agent_id || 'test-agent',
-        name: agent.name || 'TestAgent',
-        tools: agent.tools || []
-    })),
-    ensembleRequest: vi.fn().mockImplementation(async function* () {
-        // First yield a message delta
-        yield {
-            type: 'message_delta',
-            content: 'Processing task...'
-        };
-        
-        // Then yield the tool call for task_complete
-        yield {
-            type: 'tool_done',
-            tool_call: {
+vi.mock('@just-every/ensemble', () => {
+    class Agent {
+        agent_id: string;
+        name: string;
+        tools: any[];
+        instructions?: string;
+
+        constructor(def: any = {}) {
+            this.agent_id = def.agent_id || 'test-agent';
+            this.name = def.name || 'TestAgent';
+            this.tools = def.tools || [];
+            this.instructions = def.instructions;
+        }
+    }
+
+    return {
+        Agent,
+        cloneAgent: vi.fn().mockImplementation((agent) => ({
+            ...agent,
+            agent_id: agent.agent_id || 'test-agent',
+            name: agent.name || 'TestAgent',
+            tools: agent.tools || []
+        })),
+        ensembleRequest: vi.fn().mockImplementation(async function* () {
+            // First yield a message delta
+            yield {
+                type: 'message_delta',
+                content: 'Processing task...'
+            };
+            
+            // Then yield the tool call for task_complete
+            yield {
+                type: 'tool_done',
+                tool_call: {
+                    function: {
+                        name: 'task_complete'
+                    }
+                },
+                result: {
+                    output: 'Task completed successfully'
+                }
+            };
+            
+            // Finally yield the response output
+            yield {
+                type: 'response_output',
+                message: {
+                    type: 'message',
+                    role: 'assistant',
+                    content: 'Task has been completed.'
+                }
+            };
+        }),
+        createToolFunction: vi.fn((fn, desc, params, returns, name) => ({
+            function: fn,
+            definition: {
+                type: 'function',
                 function: {
-                    name: 'task_complete'
-                }
-            },
-            result: {
-                output: 'Task completed successfully'
-            }
-        };
-        
-        // Finally yield the response output
-        yield {
-            type: 'response_output',
-            message: {
-                type: 'message',
-                role: 'assistant',
-                content: 'Task has been completed.'
-            }
-        };
-    }),
-    createToolFunction: vi.fn((fn, desc, params, returns, name) => ({
-        function: fn,
-        definition: {
-            type: 'function',
-            function: {
-                name: name || fn.name || 'anonymous',
-                description: desc,
-                parameters: {
-                    type: 'object',
-                    properties: params || {},
-                    required: []
+                    name: name || fn.name || 'anonymous',
+                    description: desc,
+                    parameters: {
+                        type: 'object',
+                        properties: params || {},
+                        required: []
+                    }
                 }
             }
-        }
-    })),
-    CostTracker: vi.fn().mockImplementation(() => ({
-        getTotalCost: () => 0.01,
-        addUsage: vi.fn()
-    })),
-    getModelFromClass: vi.fn().mockResolvedValue('gpt-4'),
-    waitWhilePaused: vi.fn().mockResolvedValue(undefined),
-    truncateLargeValues: vi.fn().mockImplementation((obj, maxLength = 1000) => {
-        if (typeof obj === 'string') {
-            return obj.length > maxLength ? obj.substring(0, maxLength) + '...' : obj;
-        }
-        return obj;
-    })
-}));
+        })),
+        CostTracker: vi.fn().mockImplementation(() => ({
+            getTotalCost: () => 0.01,
+            addUsage: vi.fn()
+        })),
+        getModelFromClass: vi.fn().mockResolvedValue('gpt-4'),
+        waitWhilePaused: vi.fn().mockResolvedValue(undefined),
+        truncateLargeValues: vi.fn().mockImplementation((obj, maxLength = 1000) => {
+            if (typeof obj === 'string') {
+                return obj.length > maxLength ? obj.substring(0, maxLength) + '...' : obj;
+            }
+            return obj;
+        })
+    };
+});
 
 
 describe('Mind API', () => {
@@ -105,10 +116,7 @@ describe('Mind API', () => {
             for await (const event of runTask(agent, 'Complete this test task')) {
                 events.push(event);
             }
-            
-            // Debug: log events to see what we actually get
-            console.log('Events received:', events.map(e => ({ type: e.type, name: (e as any).tool_call?.function?.name })));
-            
+
             // Should have yielded all events including task_complete
             // Filter out metamemory events for this test
             const coreEvents = events.filter(e => e.type !== 'metamemory_event');

@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -15,22 +18,22 @@
   },
   "dependencies": {
     "d3": "^7.9.0",
-    "dotenv": "^17.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-use-websocket": "^4.10.1"
+    "dotenv": "^17.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-use-websocket": "^4.13.0"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "nodemon": "^3.1.10",
-    "postcss": "^8.5.2",
-    "sass": "^1.83.0",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3",
-    "vite": "^6.3.5"
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.23",
+    "nodemon": "^3.1.11",
+    "postcss": "^8.5.6",
+    "sass": "^1.97.0",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
   }
 }

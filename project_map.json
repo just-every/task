@@ -16,6 +16,7 @@
     "npm run build"
   ],
   "setup_instructions": [
+    "Use Node.js >=20",
     "npm install",
     "cp .env.example .env"
   ],
