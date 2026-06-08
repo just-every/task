@@ -1,6 +1,6 @@
 {
   "name": "@just-every/task",
-  "version": "0.2.44",
+  "version": "0.2.45",
   "description": "Task - Thoughtful Task Loop",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
